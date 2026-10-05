@@ -1,4 +1,18 @@
-# ===== ESTRUTURA: NODE (NÓ) =====
+ # Declaração de autoria
+# Autores: Anthony Cesar e Mateus Cerqueira
+# Declaro que este código foi desenvolvido por Anthony Cesar e Mateus Cerqueira, com base no nosso próprio
+# entendimento e esforço. Não houve plágio ou cópia integral de terceiros.
+# Ferramentas de IA, quando utilizadas, foram apenas como apoio ao aprendizado
+# e não para a geração integral deste código.
+
+## IA ULTILIZADAS : Cloude : Foi usado para saber a estrutura que ia ser usado,  ideais para o projeto, 
+# para  usado para correções de bugs e 
+# para diminuções de caractezes ultilizada
+# Notebook LN : Ultilizado para tirar duvidas de como tais funções poderiam ser usadas, 
+# e dar uma explição mais detalhada do projeto
+
+# ===== ESTRUTURA=====  
+
 # Um "Node" é a unidade básica da lista encadeada.
 # Pense nele como uma caixa que guarda UM livro e sabe apontar pra próxima caixa.
 import os
@@ -343,28 +357,67 @@ def remover_livro(catalogo):
 
 def busca_sequencial_por_titulo(livros, termo):
     termo = termo.lower()
+    # Deixa o termo de busca todo em minúsculo. Isso é pra fazer
+    # uma busca "case insensitive" — se o usuário digitar "harry"
+    # ou "HARRY" ou "Harry", o resultado deve ser o mesmo.
+
     encontrados = []
+    # Lista vazia que vai guardar todos os livros que baterem
+    # com o termo buscado. Repare que pode ter MAIS de um resultado,
+    # por isso é uma lista, não um valor único.
+
     for livro in livros:
         if termo in livro["titulo"].lower():
+            # Aqui está o coração da busca sequencial: para CADA
+            # livro da lista, comparamos se o termo buscado está
+            # CONTIDO no título (não precisa ser igual, só conter).
+            # Ex: termo="dom" bate com "Dom Casmurro".
+            # livro["titulo"].lower() também vira minúsculo,
+            # pra combinar com o termo que já ajustamos acima.
             encontrados.append(livro)
-    return encontrados
+            # Achou! Adiciona esse livro na lista de resultados
+            # e CONTINUA o loop — não damos "return" aqui, porque
+            # pode ter outros livros que também batem.
 
+    return encontrados
 
 def busca_binaria_por_isbn(livros_ordenados, isbn):
     inicio = 0
     fim = len(livros_ordenados) - 1
+    # "inicio" e "fim" marcam os limites de onde o ISBN PODE estar.
+    # No começo, a área de busca é a lista inteira: do índice 0
+    # até o último índice (len - 1, porque índice começa em 0).
 
     while inicio <= fim:
+        # Continua cortando a área de busca ENQUANTO ainda existir
+        # uma faixa válida pra checar. Se inicio passar de fim,
+        # significa que não sobrou nada pra checar — não achou.
+
         meio = (inicio + fim) // 2
+        # Pula direto pro meio da área atual, em vez de checar
+        # item por item. // é divisão inteira (sem casas decimais).
+
         if livros_ordenados[meio]["isbn"] == isbn:
             return livros_ordenados[meio]
+            # Achou exatamente no meio! Devolve o livro na hora.
+
         elif livros_ordenados[meio]["isbn"] < isbn:
             inicio = meio + 1
+            # O ISBN do meio é MENOR que o que buscamos.
+            # Como a lista está ORDENADA, isso significa que o
+            # ISBN procurado só pode estar na METADE DA DIREITA.
+            # Descartamos toda a metade esquerda, movendo "inicio"
+            # pra logo depois do meio.
+
         else:
             fim = meio - 1
+            # O ISBN do meio é MAIOR que o procurado. Por lógica
+            # inversa, o ISBN só pode estar na METADE DA ESQUERDA.
+            # Descartamos a direita, movendo "fim" pra antes do meio.
 
     return None
-
+    # Se o "while" terminar sem nenhum "return" no meio do caminho,
+    # significa que a área de busca ficou vazia — o ISBN não existe.
 
 def buscar_livro(catalogo):
     print("1 - Por ISBN (busca binária)")
@@ -372,26 +425,38 @@ def buscar_livro(catalogo):
     opcao = input("Escolha: ")
 
     livros = catalogo.percorrer()
+    # Pega o "retrato" de todos os livros em lista Python comum,
+    # necessário pros dois tipos de busca (nenhuma delas trabalha
+    # direto com Node/ListaEncadeada).
 
     if opcao == "1":
         isbn = input("ISBN: ").strip()
-        livros_ordenados = ordenar_por_isbn(livros)  # função definida no bloco de ordenação
+
+        livros_ordenados = ordenar_por_isbn(livros)
+        # ANTES de buscar por ISBN, precisamos garantir que a lista
+        # está ordenada por ISBN — senão a busca binária não funciona
+        # (como explicado acima). Por isso chamamos a ordenação aqui.
+
         resultado = busca_binaria_por_isbn(livros_ordenados, isbn)
         if resultado:
             print(resultado)
         else:
             print("Livro não encontrado.")
+
     elif opcao == "2":
         termo = input("Título (ou parte dele): ").strip()
         resultados = busca_sequencial_por_titulo(livros, termo)
+        # Aqui NÃO precisa ordenar nada antes — a busca sequencial
+        # funciona em qualquer ordem, já que ela olha item por item.
+
         if resultados:
             for livro in resultados:
                 print(livro)
         else:
             print("Nenhum livro encontrado.")
+
     else:
         print("Opção inválida.")
-
 
 # ===== MOVIMENTAÇÃO DE ESTOQUE =====
 
@@ -401,19 +466,30 @@ def entrada_estoque(catalogo, pilha):
     if livro is None:
         print("Livro não encontrado.")
         return
+        # Sem esse livro existir, não tem estoque pra mexer.
 
     try:
         quantidade = int(input("Quantidade a adicionar: "))
     except ValueError:
         print("Quantidade inválida.")
         return
+        # Protege contra o usuário digitar texto no lugar de número.
 
     if quantidade <= 0:
         print("Quantidade deve ser positiva.")
         return
+        # Não faz sentido "adicionar -5 unidades" ou "0 unidades".
 
     livro["quantidade"] += quantidade
+    # Aqui a MÁGICA da referência: como "livro" é o mesmo dicionário
+    # que está dentro do Node na lista encadeada, essa soma já
+    # atualiza o estoque real do sistema, sem precisar "salvar" nada.
+
     pilha.empilhar({"tipo": "entrada", "isbn": isbn, "quantidade": quantidade})
+    # Registra essa ação no histórico do dia, guardando o suficiente
+    # pra poder DESFAZER depois: o tipo (entrada), qual livro (isbn)
+    # e quanto foi movimentado (quantidade).
+
     print("Entrada registrada com sucesso!")
 
 
@@ -437,87 +513,170 @@ def registrar_venda(catalogo, pilha):
     if quantidade > livro["quantidade"]:
         print("Erro: estoque insuficiente.")
         return
+        # Essa validação é EXCLUSIVA da venda (não existe na entrada):
+        # não pode vender mais do que existe em estoque. Isso é uma
+        # regra de negócio importante — sem ela, o estoque ficaria
+        # negativo, o que não faz sentido no mundo real.
 
     livro["quantidade"] -= quantidade
+    # Repare: aqui é SUBTRAÇÃO (-=), o oposto da entrada (+=).
+    # Isso é o que diferencia as duas operações no sistema.
+
     pilha.empilhar({"tipo": "venda", "isbn": isbn, "quantidade": quantidade})
     print("Venda registrada com sucesso!")
 
 
 def desfazer_ultima_movimentacao(catalogo, pilha):
     movimentacao = pilha.desempilhar()
+    # Puxa a ÚLTIMA movimentação registrada (comportamento LIFO
+    # da pilha — sempre a mais recente, nunca uma antiga).
+
     if movimentacao is None:
         print("Não há movimentações para desfazer.")
         return
+        # Pilha vazia = nada foi feito ainda hoje, nada pra desfazer.
 
     livro = catalogo.buscar_por_isbn(movimentacao["isbn"])
+    # Busca o livro relacionado àquela movimentação, pra saber
+    # em qual livro reverter a quantidade.
+
     if livro is None:
         print("Livro da movimentação não existe mais.")
         return
+        # Caso raro, mas possível: e se o livro foi REMOVIDO do
+        # catálogo depois da movimentação? Sem essa checagem, o
+        # programa quebraria tentando acessar um livro que não existe.
 
     if movimentacao["tipo"] == "entrada":
         livro["quantidade"] -= movimentacao["quantidade"]
+        # Se a ação original foi uma ENTRADA (que somou estoque),
+        # desfazer precisa SUBTRAIR a mesma quantidade de volta.
+
     elif movimentacao["tipo"] == "venda":
         livro["quantidade"] += movimentacao["quantidade"]
+        # Se a ação original foi uma VENDA (que subtraiu estoque),
+        # desfazer precisa SOMAR a quantidade de volta.
 
     print(f"Movimentação desfeita: {movimentacao['tipo']} de {movimentacao['quantidade']} un.")
-
 
 # ===== ORDENAÇÃO (Insertion Sort) =====
 
 def ordenar_por_isbn(livros):
     lista = livros.copy()
+    # Faz uma cópia da lista recebida, pra NÃO alterar a lista
+    # original que veio de fora. Isso é uma boa prática — a função
+    # de ordenação não deveria ter "efeitos colaterais" inesperados.
+
     for i in range(1, len(lista)):
+        # Começa do índice 1 (o segundo elemento), não do 0.
+        # Isso porque, com só 1 elemento, a lista já está "ordenada"
+        # por definição — não tem com o que comparar ainda.
+
         atual = lista[i]
+        # "atual" é o elemento que estamos tentando encaixar
+        # no lugar certo dentro da parte já ordenada (posições 0 até i-1).
+
         j = i - 1
+        # "j" começa olhando pro elemento IMEDIATAMENTE ANTES do atual.
+
         while j >= 0 and lista[j]["isbn"] > atual["isbn"]:
+            # Enquanto ainda tiver elemento pra comparar (j >= 0) E
+            # esse elemento for MAIOR que o atual (fora de ordem):
             lista[j + 1] = lista[j]
+            # "Empurra" esse elemento maior uma posição pra frente,
+            # abrindo espaço pro "atual" entrar antes dele.
             j -= 1
+            # Continua olhando mais pra trás, repetindo o processo.
+
         lista[j + 1] = atual
+        # Quando o loop para (achou um elemento menor ou chegou
+        # ao início da lista), é aqui que o "atual" realmente
+        # se encaixa — na posição logo depois de "j".
+
     return lista
 
 
 def ordenar_por_quantidade(livros):
+    # Mesma lógica EXATA da função ordenar_por_isbn, só muda o
+    # campo comparado: "quantidade" em vez de "isbn".
     lista = livros.copy()
+    # Cópia da lista original, pra não alterar o que veio de fora.
+
     for i in range(1, len(lista)):
+        # Começa do índice 1, porque com 1 elemento só a lista
+        # já está "ordenada" por definição.
         atual = lista[i]
+        # Elemento que estamos tentando encaixar no lugar certo.
+
         j = i - 1
+        # Olha pro elemento imediatamente antes do atual.
+
         while j >= 0 and lista[j]["quantidade"] > atual["quantidade"]:
+            # Enquanto o elemento anterior tiver quantidade MAIOR
+            # que o atual (fora de ordem), empurra ele pra frente.
             lista[j + 1] = lista[j]
             j -= 1
+            # Continua olhando mais pra trás.
+
         lista[j + 1] = atual
+        # Encaixa o "atual" na posição certa, logo depois de "j".
+
     return lista
 
 
 def ordenar_por_valor_total(livros):
+    # Mesma lógica de novo, mas o critério não é um campo direto
+    # do dicionário — é um valor CALCULADO (preço × quantidade).
     lista = livros.copy()
+
     for i in range(1, len(lista)):
         atual = lista[i]
+
         valor_atual = atual["preco"] * atual["quantidade"]
+        # Calcula o valor total do "atual" UMA VEZ, fora do while,
+        # pra não recalcular essa multiplicação toda hora à toa.
+
         j = i - 1
         while j >= 0 and (lista[j]["preco"] * lista[j]["quantidade"]) > valor_atual:
+            # Aqui SIM recalculamos pra cada lista[j], porque cada
+            # posição tem um livro diferente, com valor diferente.
             lista[j + 1] = lista[j]
             j -= 1
         lista[j + 1] = atual
+
     return lista
 
 
 def gerar_pedidos_reposicao(catalogo):
     livros = catalogo.percorrer()
     fila = FilaPrioridade()
+    # Fila nova, do zero, a cada chamada — cálculo sempre fresco,
+    # baseado no estoque atual naquele momento.
 
     for livro in livros:
         prioridade = livro["estoque_minimo"] - livro["quantidade"]
+        # Quanto mais abaixo do mínimo, MAIOR esse número.
+        # Ex: mínimo=10, quantidade=3 → prioridade=7 (crítico)
+        # Ex: mínimo=10, quantidade=15 → prioridade=-5 (estoque OK)
+
         if prioridade > 0:
+            # Só entra na fila quem realmente precisa de reposição.
             fila.inserir(livro, prioridade)
+            # A FilaPrioridade já reordena sozinha ao inserir.
 
     if fila.esta_vazia():
         print("Nenhum livro precisa de reposição.")
         return
+        # Ninguém entrou na fila = todo estoque está OK.
 
     print("=== PEDIDOS DE REPOSIÇÃO (mais urgente primeiro) ===")
     while not fila.esta_vazia():
         livro = fila.proximo()
+        # Sempre devolve o mais urgente primeiro, por causa do
+        # sort interno da FilaPrioridade.
         print(f"{livro['titulo']} - faltam {livro['estoque_minimo'] - livro['quantidade']} unidades")
+        # Recalcula a diferença aqui só pra mostrar de forma clara
+        # pro usuário, em vez do número bruto de prioridade.
 
 
 def relatorio_por_quantidade(catalogo):
@@ -530,37 +689,28 @@ def relatorio_por_quantidade(catalogo):
         return
 
     ordenados = ordenar_por_quantidade(livros)
+    # Reaproveita a mesma função de ordenação manual (Insertion Sort)
+    # já usada em outros lugares do sistema.
+
     print("=== RELATÓRIO POR QUANTIDADE ===")
     for livro in ordenados:
         print(f"{livro['titulo']} - Qtd: {livro['quantidade']}")
 
-
 def relatorio_por_valor_total(catalogo):
     livros = catalogo.percorrer()
-
     if len(livros) == 0:
-        # Mesma lógica da função acima: sem livro cadastrado, avisa
-        # e sai, em vez de mostrar só o cabeçalho vazio.
         print("Nenhum livro cadastrado para gerar relatório.")
         return
-
-    ordenados = ordenar_por_valor_total(livros)
     print("=== RELATÓRIO POR VALOR TOTAL ===")
-    for livro in ordenados:
-        valor = livro["preco"] * livro["quantidade"]
-        print(f"{livro['titulo']} - Valor total: R$ {valor:.2f}")
+    for livro in ordenar_por_valor_total(livros):
+        print(f"{livro['titulo']} - R$ {livro['preco'] * livro['quantidade']:.2f}")
 
 
 def limpar_tela():
     os.system("cls" if os.name == "nt" else "clear")
-    # os.name == "nt" → é Windows, então usa o comando "cls"
-    # qualquer outro valor (Linux/Mac) → usa o comando "clear"
-
-
+   
 def pausar():
     input("\nPressione ENTER para continuar...")
-    # Trava a execução até o usuário apertar Enter, dando tempo
-    # de ler o resultado antes da tela ser limpa no próximo loop.
 
 
 # ===== PROGRAMA PRINCIPAL =====
